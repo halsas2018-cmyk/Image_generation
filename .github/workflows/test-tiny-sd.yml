@@ -1,0 +1,46 @@
+name: Test Tiny-SD on CPU
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Description of the image to generate"
+        required: true
+        type: string
+        default: "A historically inspired illustration of an ancient African trading city, mud-brick architecture, merchants in traditional clothing, detailed hand-painted style, no text"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install CPU-only PyTorch
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate image
+        env:
+          IMAGE_PROMPT: ${{ inputs.prompt }}
+        run: python generate.py
+
+      - name: Upload generated image
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiny-sd-test-image
+          path: output/
+          if-no-files-found: error
