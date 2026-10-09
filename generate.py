@@ -5,7 +5,9 @@ from pathlib import Path
 import torch
 from diffusers import StableDiffusionPipeline
 
-MODEL_ID = "segmind/tiny-sd"
+
+MODEL_ID = "stabilityai/sd-turbo"
+#MODEL_ID = "segmind/tiny-sd"
 OUTPUT_DIR = Path("output")
 OUTPUT_FILE = OUTPUT_DIR / "tiny_sd_test.png"
 
