@@ -42,8 +42,8 @@ image = pipe(
     prompt=prompt,
     width=512,
     height=896,
-    num_inference_steps=8,
-    guidance_scale=5.0,
+    num_inference_steps=4,
+    guidance_scale=0.0,
     generator=torch.Generator(device="cpu").manual_seed(42),
 ).images[0]
 
