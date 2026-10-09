@@ -92,8 +92,8 @@ jobs:
           config.lcm_diffusion_setting.image_height = 512
 
           # Fast generation settings
-          config.lcm_diffusion_setting.inference_steps = 1
-          config.lcm_diffusion_setting.guidance_scale = 1.0
+          config.lcm_diffusion_setting.inference_steps = 4
+          config.lcm_diffusion_setting.guidance_scale = 4.0
 
           # Reproducibility
           config.lcm_diffusion_setting.seed = 42
