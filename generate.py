@@ -32,16 +32,16 @@ pipe = pipe.to("cpu")
 load_time = time.perf_counter() - start
 print(f"Model loading time: {load_time:.1f} seconds")
 
-print("Generating one 512x512 image...")
+print("Generating one 512x896 image...")
 
 start = time.perf_counter()
 
 image = pipe(
     prompt=prompt,
     width=512,
-    height=512,
-    num_inference_steps=4,
-    guidance_scale=0.0,
+    height=896,
+    num_inference_steps=8,
+    guidance_scale=5.0,
     generator=torch.Generator(device="cpu").manual_seed(42),
 ).images[0]
 
