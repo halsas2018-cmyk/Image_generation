@@ -56,6 +56,7 @@ jobs:
           grep -v '^PyQt5' requirements.txt > /tmp/fastsd-requirements.txt
           uv pip install -r /tmp/fastsd-requirements.txt
 
+      
       - name: Generate image
         working-directory: fastsdcpu
         env:
@@ -63,15 +64,57 @@ jobs:
           NEGATIVE_PROMPT: ${{ inputs.negative_prompt }}
         run: |
           source env/bin/activate
-          python src/app.py \
-            --prompt "$IMAGE_PROMPT" \
-            --negative_prompt "$NEGATIVE_PROMPT" \
-            --image_width 512 \
-            --image_height 512 \
-            --inference_steps 1 \
-            --guidance_scale 1.0 \
-            --seed 42 \
-            --number_of_images 1
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          from state import get_context, get_settings
+          from models.interface_types import InterfaceType
+          from backend.models.lcmdiffusion_setting import DiffusionTask
+
+          app_settings = get_settings()
+          config = app_settings.settings
+
+          config.lcm_diffusion_setting.lcm_model_id = "stabilityai/sd-turbo"
+          config.lcm_diffusion_setting.prompt = os.environ["IMAGE_PROMPT"]
+          config.lcm_diffusion_setting.negative_prompt = os.environ["NEGATIVE_PROMPT"]
+          config.lcm_diffusion_setting.image_width = 512
+          config.lcm_diffusion_setting.image_height = 512
+          config.lcm_diffusion_setting.inference_steps = 1
+          config.lcm_diffusion_setting.guidance_scale = 1.0
+          config.lcm_diffusion_setting.seed = 42
+          config.lcm_diffusion_setting.use_seed = True
+          config.lcm_diffusion_setting.use_openvino = False
+          config.lcm_diffusion_setting.use_lcm_lora = False
+          config.lcm_diffusion_setting.use_tiny_auto_encoder = False
+          config.lcm_diffusion_setting.use_safety_checker = False
+          config.lcm_diffusion_setting.diffusion_task = DiffusionTask.text_to_image.value
+          config.lcm_diffusion_setting.controlnet = None
+          config.lcm_diffusion_setting.lora.enabled = False
+
+          config.generated_images.path = "results"
+          config.generated_images.format = "PNG"
+          config.generated_images.save_image = True
+
+          context = get_context(InterfaceType.CLI)
+          images = context.generate_text_to_image(
+              settings=config,
+              device="cpu",
+              save_config=False,
+          )
+
+          if not images:
+              raise RuntimeError("FastSD CPU returned no images.")
+
+          saved_files = context.save_images(images, config)
+          if not saved_files:
+              raise RuntimeError("FastSD CPU generated no saved image files.")
+
+          for filename in saved_files:
+              path = Path(config.generated_images.path) / filename
+              print(f"Saved image: {path.resolve()}")
+          PY
+        
 
       - name: Verify output
         run: |
