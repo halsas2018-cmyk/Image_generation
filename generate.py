@@ -41,7 +41,7 @@ start = time.perf_counter()
 image = pipe(
     prompt=prompt,
     width=512,
-    height=896,
+    height=768,
     num_inference_steps=4,
     guidance_scale=0.0,
     generator=torch.Generator(device="cpu").manual_seed(42),
